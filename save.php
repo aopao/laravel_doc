@@ -20,13 +20,14 @@ function saveToFile($path,$content)
 	}
 }
 $tocContent=file_get_contents('toc.html');
+$tplContent=@file_get_contents('tpl.html');
 if($debug){
 	$dIndex=0;
 }
 foreach($postData as $itemNode){
 	if($debug){
 		$dIndex++;
-		if($dIndex>6){
+		if($dIndex>14){
 			break;
 		}
 	}
@@ -44,14 +45,13 @@ foreach($postData as $itemNode){
 		'title'=>$itemNode['title'],
 		't_name'=>$itemNode['t_name']
 	];
-	$tplContent=@file_get_contents($savePath.'/../tpl.html');
-	$tplContent=str_replace(
+	$htmlContent=str_replace(
 		['{title}','{content}'],
 		[$itemNode['title'],$content],
 		$tplContent
 	);
 	$itemSavePath=$savePath.'/'.$itemNode['t_name'].'.html';
-	saveToFile($itemSavePath,$tplContent);
+	saveToFile($itemSavePath,$htmlContent);
 }
 if($debug){
 	$outputPath=$savePath.'/debug.html';

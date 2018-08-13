@@ -68,7 +68,6 @@ function fetchData(fn,taskIndex=0)
 		dataType:"html",
 		success:function(data){
 			var doc=$(data);
-			var docTitle=$(data).find("h1:eq(0) span").text().trim();
 			var docElement=$(data).find(".markdown-body");
 			docElement.find("pre code").each(function(codeIndex,codeElement){
 				Prism.highlightElement(codeElement);
@@ -78,7 +77,7 @@ function fetchData(fn,taskIndex=0)
 				sec_index:taskItem.selectionIndex,
 				sec_title:taskItem.selectionTitle,
 				t_name:taskItem.t_name,
-				title:docTitle,
+				title:taskItem.t_title,
 				content:docContent
 			};
 			resultList.push(resultData);
@@ -94,3 +93,6 @@ function fetchData(fn,taskIndex=0)
 	});
 }
 fetchData(saveData);
+localStorage.setItem("resultList",resultList);
+//resultList=localStorage.getItem("resultList");
+//saveData();
