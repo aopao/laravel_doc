@@ -13,3 +13,7 @@
 ### pdf构建
 
 最后使用calibre 的ebook-convert工具,将HTML转换为PDF版本
+
+### 效果展示
+
+![demo](images/demo.png)
