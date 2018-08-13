@@ -4,8 +4,10 @@ set is_debug=0
 set inputFile=all.html
 set outputFile=output.pdf
 if %is_debug% equ 1 (
-	set inputFile=debug.html
-	set outputFile=debug.pdf
+  set inputFile=debug.html
+  set outputFile=debug.pdf
 )
+cd html_files
 echo "%inputFile% ------  %outputFile%" 
-ebook-convert %inputFile% %outputFile% -v --paper-size=a4 --level1-toc=//h:h1 --level2-toc=//h:h2 --level3-toc=//h:h3 --pdf-page-margin-left=18 --pdf-page-margin-right=18 --pdf-header-template=%header_tpl% --pdf-footer-template=%header_tpl%
+ebook-convert "%inputFile%" "../%outputFile%" -v --paper-size=a4 --level1-toc=//h:h1 --level2-toc=//h:h2 --level3-toc=//h:h3 --pdf-page-margin-left=18 --pdf-page-margin-right=18 --pdf-header-template=%header_tpl% --pdf-footer-template=%header_tpl%
+cd ..

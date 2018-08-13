@@ -273,3 +273,28 @@ pre[class*="language-"],pre[class*="language-"] code{
 white-space: pre-wrap;
 word-wrap: break-word;
 }
+.toc-h1{
+	text-align: center;
+}
+.toc-item{
+	list-style: none;
+    display: block;
+    margin: 5px;
+    padding: 5px;
+    border: 1px solid #eaf1f5;
+    color: #0088cc;
+    line-height: 24px;
+}
+.toc-group{
+	padding: 5px;
+	padding-bottom: 10px;
+	margin-bottom: 20px;
+}
+.toc-title{
+	color: #505b63;
+    height: 25px;
+    line-height: 25px;
+    display: block;
+    font-size: 1.2em;
+    margin-bottom: 0.5em;
+}

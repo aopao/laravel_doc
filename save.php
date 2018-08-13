@@ -3,7 +3,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: X-PINGOTHER, Content-Type');
 header('Content-Type: application/json; charset=utf-8');
-$savePath='.';
+$savePath='./html_files';
 $debug=false;
 if(!is_dir($savePath)){
 	mkdir($savePath);
@@ -19,7 +19,7 @@ function saveToFile($path,$content)
 		exit();
 	}
 }
-$allHtml='';
+$tocContent=file_get_contents('toc.html');
 if($debug){
 	$dIndex=0;
 }
@@ -31,16 +31,8 @@ foreach($postData as $itemNode){
 		}
 	}
 	$content=$itemNode['content'];
-	$content=preg_replace_callback('@href="(/docs/laravel/5.6/)([^"#]+)(#[^"]+)?"@',function($match){
-		if(isset($match[3])){
-			$target=$match[3];
-		}else{
-			$target='#chapter_'.$match[2];
-		}
-		return 'href="'.$target.'"';
-	},$content);
+	$content=preg_replace('@href="(/docs/laravel/5.6/)([^"#]+)(#[^"]+)?"@','href="\2.html\3"',$content);
 	$content='<div name="chapter_'.$itemNode['t_name'].'" class="ui readme markdown-body content-body">'.$content.'</div>';
-	$allHtml.=($content.PHP_EOL);
 	$groupIndex = $itemNode['sec_index'];
 	if(!isset($tocArr[$groupIndex])){
 		$tocArr[$groupIndex]=[
@@ -52,14 +44,34 @@ foreach($postData as $itemNode){
 		'title'=>$itemNode['title'],
 		't_name'=>$itemNode['t_name']
 	];
+	$tplContent=@file_get_contents($savePath.'/../tpl.html');
+	$tplContent=str_replace(
+		['{title}','{content}'],
+		[$itemNode['title'],$content],
+		$tplContent
+	);
+	$itemSavePath=$savePath.'/'.$itemNode['t_name'].'.html';
+	saveToFile($itemSavePath,$tplContent);
 }
-$tplContent=@file_get_contents($savePath.'/tpl.html');
-$tplContent=str_replace('{content}',$allHtml,$tplContent);
 if($debug){
 	$outputPath=$savePath.'/debug.html';
 }else{
 	$outputPath=$savePath.'/all.html';
 }
-saveToFile($outputPath,$tplContent);
+$tocListHtml='';
+foreach($tocArr as $tocGroup){
+	$groupHtml="\t\t".'<li class="toc-group toc-item">
+			<span class="toc-title">'.$tocGroup['name'].'</span>
+			<ol>'.PHP_EOL;
+	foreach($tocGroup['list'] as $listNode){
+		$groupHtml.=("\t\t\t\t".'<li class="toc-item"><a href="'.$listNode['t_name'].'.html">'.$listNode['title'].'</a></li>'.PHP_EOL);
+	}
+	$groupHtml.="\t\t\t".'</ol>
+		</li>';
+	$tocListHtml.=$groupHtml;
+	$tocListHtml.=PHP_EOL;
+}
+$tocContent=str_replace('{list}',$tocListHtml,$tocContent);
+saveToFile($outputPath,$tocContent);
 $result=['code'=>0,'message'=>'success'];
 echo json_encode($result);
