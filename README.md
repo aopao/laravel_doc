@@ -4,15 +4,15 @@
 
 ### 前台抓取
 
-前往[laravel文档目录页](https://laravel-china.org/docs/laravel/5.6)，打开控制台，执行`fetch.js`中的内容
+前往[laravel文档目录页](https://laravel-china.org/docs/laravel/5.6)，打开控制台，复制`fetch.js`中的内容执行
 
 ### 后台保存
 
-抓取到的内容会被`save.php`合并保存为`all.html`
+抓取到的内容会通过ajax请求，发送到后端的`save.php`,并保存为`all.html`
 
 ### pdf构建
 
-最后使用calibre 的ebook-convert工具,将HTML转换为PDF版本
+最后双击build.bat，将调用[calibre](https://calibre-ebook.com/download) 的ebook-convert命令行工具,将HTML转换为PDF版本
 
 ### 效果展示
 
