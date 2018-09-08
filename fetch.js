@@ -28,10 +28,18 @@ $(".sorted_table.tree >li").each(function(selectionIndex,selectionItem){
 
 var resultList = [];
 
+function cacheSetResultList(){
+	localStorage.setItem("resultList",JSON.stringify(resultList));
+}
+
+function cacheGetResultList(){
+	return JSON.parse(localStorage.getItem("resultList"));
+}
+
 function saveData()
 {
 	console.log("saveData");
-	console.log(resultList);
+	/*console.log(resultList);*/
 	$.ajax({
 		type:"POST",
 		url:"http://localhost/laravel_doc/save.php",
@@ -57,6 +65,7 @@ function fetchData(fn,taskIndex=0)
 {
 	if(taskIndex>=taskList.length){
 		console.log("complete fetch");
+		cacheSetResultList();
 		fn();
 		return;
 	}
@@ -92,7 +101,9 @@ function fetchData(fn,taskIndex=0)
 		}
 	});
 }
+////option 1
 fetchData(saveData);
-localStorage.setItem("resultList",resultList);
-//resultList=localStorage.getItem("resultList");
+//
+////or直接读取缓存,然后保存
+//var resultList=cacheGetResultList();
 //saveData();
