@@ -1,77 +1,127 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: liuguang
+ * Date: 2018/9/9
+ * Time: 14:13
+ */
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: X-PINGOTHER, Content-Type');
 header('Content-Type: application/json; charset=utf-8');
-$savePath='./html_files';
-$debug=false;
-if(!is_dir($savePath)){
-	mkdir($savePath);
-}
-$postData=json_decode($_POST['raw'],true);
-$tocArr=[];
-function saveToFile($path,$content)
+/**
+ * 错误响应
+ * @param string $message 错误内容
+ * @return void
+ */
+function sendErrorResponse($message)
 {
-	$p=@file_put_contents($path,$content);
-	if($p===false){
-		$result=['code'=>-1,'message'=>'写入文件'.$path.'失败'];
-		echo json_encode($result);
-		exit();
-	}
+    echo json_encode(['code' => -1, 'message' => $message, 'data' => null]);
+    exit();
 }
-$tocContent=file_get_contents('toc.html');
-$tplContent=@file_get_contents('tpl.html');
-if($debug){
-	$dIndex=0;
+
+/**
+ * 成功响应
+ * @param mixed $data 数据
+ * @return void
+ */
+function sendSuccessResponse($data = null)
+{
+    echo json_encode(['code' => 0, 'message' => 'ok', 'data' => $data]);
+    exit();
 }
-foreach($postData as $itemNode){
-	if($debug){
-		$dIndex++;
-		if($dIndex>14){
-			break;
-		}
-	}
-	$content=$itemNode['content'];
-	$content=preg_replace('@href="(/docs/laravel/5.6/)([^"#]+)(#[^"]+)?"@','href="\2.html\3"',$content);
-	$content='<div name="chapter_'.$itemNode['t_name'].'" class="ui readme markdown-body content-body">'.$content.'</div>';
-	$groupIndex = $itemNode['sec_index'];
-	if(!isset($tocArr[$groupIndex])){
-		$tocArr[$groupIndex]=[
-			'name'=>$itemNode['sec_title'],
-			'list'=>[]
-		];
-	}
-	$tocArr[$groupIndex]['list'][]=[
-		'title'=>$itemNode['title'],
-		't_name'=>$itemNode['t_name']
-	];
-	$htmlContent=str_replace(
-		['{title}','{content}'],
-		[$itemNode['title'],$content],
-		$tplContent
-	);
-	$itemSavePath=$savePath.'/'.$itemNode['t_name'].'.html';
-	saveToFile($itemSavePath,$htmlContent);
+
+//只接受POST
+if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+    sendErrorResponse('not POST method !');
 }
-if($debug){
-	$outputPath=$savePath.'/debug.html';
-}else{
-	$outputPath=$savePath.'/all.html';
+$isDebug = false;
+//读取模板文件
+$saveDir = __DIR__ . DIRECTORY_SEPARATOR . 'html_files' . DIRECTORY_SEPARATOR;
+if (!is_dir($saveDir)) {
+    if (@mkdir($saveDir) === false) {
+        sendErrorResponse('创建文件夹 ' . $saveDir . ' 失败');
+    }
 }
-$tocListHtml='';
-foreach($tocArr as $tocGroup){
-	$groupHtml="\t\t".'<li class="toc-group toc-item">
-			<span class="toc-title">'.$tocGroup['name'].'</span>
-			<ol>'.PHP_EOL;
-	foreach($tocGroup['list'] as $listNode){
-		$groupHtml.=("\t\t\t\t".'<li class="toc-item"><a href="'.$listNode['t_name'].'.html">'.$listNode['title'].'</a></li>'.PHP_EOL);
-	}
-	$groupHtml.="\t\t\t".'</ol>
+$tplContent = @file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'tpl.html');
+if ($tplContent === false) {
+    sendErrorResponse('读取文件 tpl.html 失败');
+}
+$tocContent = @file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'toc.html');
+if ($tocContent === false) {
+    sendErrorResponse('读取文件 toc.html 失败');
+}
+/**
+ * 处理页面HTML的保存
+ * @param string $filename html文件名
+ * @param string $title 标题
+ * @param string $content 文件内容
+ * @return void
+ * @throws \Exception
+ */
+function processSavePage($filename, $title, $content)
+{
+    global $saveDir, $tplContent;
+    $savePath = $saveDir . $filename;
+    $content = '<div class="ui readme markdown-body content-body">' . $content . '</div>';
+    $content = str_replace(
+        ['{title}', '{content}'],
+        [$title, $content],
+        $tplContent);
+    $op = @file_put_contents($savePath, $content);
+    if ($op === false) {
+        throw new \Exception('保存文件' . $filename . '失败');
+    }
+}
+
+function processSaveDoc($groups)
+{
+    global $saveDir, $tocContent, $isDebug;
+    $savePath = $saveDir . 'all.html';
+    if ($isDebug) {
+        $savePath = $saveDir . 'debug.html';
+    }
+    $tocListHtml = '';
+    foreach ($groups as $tocGroup) {
+        $groupHtml = "\t\t" . '<li class="toc-group toc-item">
+			<span class="toc-title">' . $tocGroup['title'] . '</span>
+			<ol>' . PHP_EOL;
+        foreach ($tocGroup['pages'] as $pageNode) {
+            $groupHtml .= ("\t\t\t\t" . '<li class="toc-item"><a href="' . $pageNode['filename'] . '">' . $pageNode['title'] . '</a></li>' . PHP_EOL);
+        }
+        $groupHtml .= "\t\t\t" . '</ol>
 		</li>';
-	$tocListHtml.=$groupHtml;
-	$tocListHtml.=PHP_EOL;
+        $tocListHtml .= $groupHtml;
+        $tocListHtml .= PHP_EOL;
+    }
+    $content = str_replace('{list}', $tocListHtml, $tocContent);
+    $op = @file_put_contents($savePath, $content);
+    if ($op === false) {
+        throw new \Exception('保存文件' . $savePath . '失败');
+    }
 }
-$tocContent=str_replace('{list}',$tocListHtml,$tocContent);
-saveToFile($outputPath,$tocContent);
-$result=['code'=>0,'message'=>'success'];
-echo json_encode($result);
+
+if (isset($_POST['type'])) {
+    if ($_POST['type'] == 'doc') {
+        try {
+            processSaveDoc(json_decode($_POST['raw'], true));
+            sendSuccessResponse();
+        } catch (\Exception $e) {
+            sendErrorResponse($e->getMessage());
+        }
+    } else {
+        try {
+            processSavePage($_POST['filename'], $_POST['title'], $_POST['content']);
+            sendSuccessResponse();
+        } catch (\Exception $e) {
+            sendErrorResponse($e->getMessage());
+        }
+    }
+} else {
+    try {
+        processSavePage($_POST['filename'], $_POST['title'], $_POST['content']);
+        sendSuccessResponse();
+    } catch (\Exception $e) {
+        sendErrorResponse($e->getMessage());
+    }
+}
