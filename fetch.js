@@ -108,7 +108,7 @@
                 setTimeout(function () {
                     //延迟
                     successFn(pageNode, docContent);
-                }, Math.random() + 1000);
+                }, Math.random() + fetchTimeP );
             },
             error: function () {
                 errorFn(pageNode);
