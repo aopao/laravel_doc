@@ -35,7 +35,6 @@ function sendSuccessResponse($data = null)
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     sendErrorResponse('not POST method !');
 }
-$isDebug = false;
 //读取模板文件
 $saveDir = __DIR__ . DIRECTORY_SEPARATOR . 'html_files' . DIRECTORY_SEPARATOR;
 if (!is_dir($saveDir)) {
@@ -74,13 +73,15 @@ function processSavePage($filename, $title, $content)
     }
 }
 
+/**
+ * 处理文档目录页生成
+ * @param $groups
+ * @throws Exception
+ */
 function processSaveDoc($groups)
 {
-    global $saveDir, $tocContent, $isDebug;
+    global $saveDir, $tocContent;
     $savePath = $saveDir . 'all.html';
-    if ($isDebug) {
-        $savePath = $saveDir . 'debug.html';
-    }
     $tocListHtml = '';
     foreach ($groups as $tocGroup) {
         $groupHtml = "\t\t" . '<li class="toc-group toc-item">
