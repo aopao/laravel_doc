@@ -12,7 +12,7 @@ set /P docName=<inc/toc_name.txt
 cd html_files
 echo %docName%
 echo "%inputFile% ------  %outputFile%"
-set metaOption=--title "%docName%"  --authors="流光" --comments="本PDF文档由流光整理制作 [https://github.com/liuguangw/laravel_doc]"
+set metaOption=--title="%docName%"  --authors="流光" --comments="本PDF文档由流光整理制作 [https://github.com/liuguangw/laravel_doc]"
 set commonOption=--language=zh-hans --chapter-mark=pagebreak --page-breaks-before=/  --paper-size=a4 --breadth-first --max-levels=1
 set tocOption=--no-chapters-in-toc --level1-toc=//h:title --level2-toc=//h:h2 --level3-toc=//h:h3
 set marginOption=--pdf-page-margin-left=18 --pdf-page-margin-right=18 --pdf-page-margin-top=38 --pdf-page-margin-bottom=38

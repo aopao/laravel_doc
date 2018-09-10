@@ -18,7 +18,7 @@
 
 ### 效果展示
 
-![demo](images/demo.png)
+![demo](images/demo.png?v=2333)
 
 ### 如何保存laravel-china的其它文档?
 
