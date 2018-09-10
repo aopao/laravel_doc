@@ -2,7 +2,7 @@
     /*文档章节分组*/
     var pageGroups = [];
     var allPages = [];
-    /*抓取数据缓存方式,0 永不缓存,1 localstorage缓存*/
+    /*读取数据来源,0 只抓取,1优先使用缓存(如果存在)*/
     var cacheType = 0;
     var pageContents = [];
     var localCacheKey = "doc_cache";
@@ -10,6 +10,7 @@
     var fetchTimeP = 1000;
     /*后端api地址*/
     var backendApi = "http://localhost/laravel_doc/save.php";
+    var docName = "laravel 5.6 中文文档";
 
     function loadLocalCache() {
         if (localStorage.hasOwnProperty(localCacheKey)) {
@@ -19,8 +20,13 @@
     }
 
     function writeLocalCache() {
-        localStorage.setItem(localCacheKey, JSON.stringify(pageContents));
-        console.log("write content cache success !");
+        try {
+            localStorage.setItem(localCacheKey, JSON.stringify(pageContents));
+            console.log("write content cache success !");
+        } catch (e) {
+            console.error("write cache failed");
+            console.log(e);
+        }
     }
 
     if (cacheType == 1) {
@@ -108,7 +114,7 @@
                 setTimeout(function () {
                     //延迟
                     successFn(pageNode, docContent);
-                }, Math.random() + fetchTimeP );
+                }, Math.random() + fetchTimeP);
             },
             error: function () {
                 errorFn(pageNode);
@@ -142,6 +148,7 @@
             dataType: "json",
             data: {
                 type: "doc",
+                doc_name: docName,
                 raw: JSON.stringify(pageGroups)
             },
             success: function (data) {

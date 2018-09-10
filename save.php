@@ -36,17 +36,17 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     sendErrorResponse('not POST method !');
 }
 //读取模板文件
-$saveDir = __DIR__ . DIRECTORY_SEPARATOR . 'html_files' . DIRECTORY_SEPARATOR;
+$saveDir = __DIR__ . '/./html_files/';
 if (!is_dir($saveDir)) {
     if (@mkdir($saveDir) === false) {
         sendErrorResponse('创建文件夹 ' . $saveDir . ' 失败');
     }
 }
-$tplContent = @file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'tpl.html');
+$tplContent = @file_get_contents(__DIR__ . '/./inc/tpl.html');
 if ($tplContent === false) {
     sendErrorResponse('读取文件 tpl.html 失败');
 }
-$tocContent = @file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'toc.html');
+$tocContent = @file_get_contents(__DIR__ . '/./inc/toc.html');
 if ($tocContent === false) {
     sendErrorResponse('读取文件 toc.html 失败');
 }
@@ -75,10 +75,11 @@ function processSavePage($filename, $title, $content)
 
 /**
  * 处理文档目录页生成
- * @param $groups
+ * @param array $groups
+ * @param string $docName
  * @throws Exception
  */
-function processSaveDoc($groups)
+function processSaveDoc($groups, $docName)
 {
     global $saveDir, $tocContent;
     $savePath = $saveDir . 'all.html';
@@ -95,30 +96,35 @@ function processSaveDoc($groups)
         $tocListHtml .= $groupHtml;
         $tocListHtml .= PHP_EOL;
     }
-    $content = str_replace('{list}', $tocListHtml, $tocContent);
+    $content = str_replace(['{list}', '{title}'], [$tocListHtml, $docName], $tocContent);
     $op = @file_put_contents($savePath, $content);
     if ($op === false) {
         throw new \Exception('保存文件' . $savePath . '失败');
     }
+    $op = @file_put_contents($saveDir . '../inc/toc_name.txt', mb_convert_encoding($docName, 'GBK', 'UTF-8'));
+    if ($op === false) {
+        throw new \Exception('保存文档名称失败');
+    }
 }
 
+$actionType = '';
 if (isset($_POST['type'])) {
-    if ($_POST['type'] == 'doc') {
-        try {
-            processSaveDoc(json_decode($_POST['raw'], true));
-            sendSuccessResponse();
-        } catch (\Exception $e) {
-            sendErrorResponse($e->getMessage());
+    $actionType = $_POST['type'];
+}
+if ($actionType == 'doc') {
+    //保存文档目录结构
+    try {
+        $docName = '未知文档';
+        if (isset($_POST['doc_name'])) {
+            $docName = $_POST['doc_name'];
         }
-    } else {
-        try {
-            processSavePage($_POST['filename'], $_POST['title'], $_POST['content']);
-            sendSuccessResponse();
-        } catch (\Exception $e) {
-            sendErrorResponse($e->getMessage());
-        }
+        processSaveDoc(json_decode($_POST['raw'], true), $docName);
+        sendSuccessResponse();
+    } catch (\Exception $e) {
+        sendErrorResponse($e->getMessage());
     }
 } else {
+    //保存文档的某个页面
     try {
         processSavePage($_POST['filename'], $_POST['title'], $_POST['content']);
         sendSuccessResponse();

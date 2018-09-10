@@ -1,15 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>{title}</title>
-    <link href="../style.css" rel="stylesheet" />
+    <title>{title} - 目录</title>
+    <!-- 目录页模板 -->
+    <link href="../inc/style.css" rel="stylesheet" />
 </head>
 <body>
-	<div class="ui segment article-content">
-		<div class="extra-padding">{content}</div>
+	<h1 class="toc-h1">{title} - 目录</h1>
+	<div class="toc-main">
+	<ul>
+<!--list start-->
+{list}
+<!--list end-->
+	</ul>
 	</div>
 </body>
 </html>
